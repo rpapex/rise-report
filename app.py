@@ -32,11 +32,12 @@ RE_HHMM = re.compile(r'(\d{2}:\d{2})')
 # "RISE" tollerante a spazi/maiuscole (es. R I S E)
 RE_RISE = re.compile(r'\bR\s*I\s*S\s*E\b', re.IGNORECASE)
 
-# Mesi italiani per fallback parsing
+# Mesi italiani per parsing e visualizzazione
 MESI = {
     "gennaio":1,"febbraio":2,"marzo":3,"aprile":4,"maggio":5,"giugno":6,
     "luglio":7,"agosto":8,"settembre":9,"ottobre":10,"novembre":11,"dicembre":12
 }
+MESE_NOME = {v: k.capitalize() for k, v in MESI.items()}
 
 def parse_month_year_from_text(text: str):
     # Cerca MM/YYYY, MM-YYYY, YYYY-MM, Mese YYYY
@@ -96,7 +97,7 @@ def analyze_folder(folder):
 
                     for line in lines + ["__ENDOFPAGE__"]:
                         m = RE_ROW_DATE.match(line)
-                        if m or line == "__ENDOFPAGE__":
+                        if m or line == "__ENDOFPAGE__"]:
                             if block and (month and year):
                                 block_text = "\n".join(block)
                                 if RE_RISE.search(block_text):
@@ -181,8 +182,7 @@ def export_pdf_memory(records_df, full_name, total_days) -> bytes:
 # -----------------------
 st.title("RISE Report — Upload libero (senza regole sul nome file)")
 st.caption("Carica uno ZIP con i cartellini: l'app leggerà mese/anno dal contenuto dei PDF.")
-st.info("🔒 Privacy: i file caricati vengono elaborati solo durante la sessione in una cartella temporanea e non vengono salvati in modo permanente sul server.")
-
+st.info("🔒 **Privacy**: i file caricati vengono elaborati solo durante la sessione in una cartella temporanea e non vengono salvati in modo permanente sul server.")
 
 # --- Guida: come creare correttamente lo ZIP dei cartellini ---
 with st.expander("📦 Istruzioni per creare lo ZIP dei cartellini", expanded=False):
@@ -244,16 +244,28 @@ if run:
 
         st.success(f"Analisi completata. Totale giornate con RISE: {total_days}")
 
-        # Diagnostica
+        # -----------------------
+        # Nuova tabella: mesi/anni con corrispondenze
+        # -----------------------
+        st.subheader("Scarica le buste paga e i cartellini orologio dei seguenti mesi.")
+        if df.empty:
+            st.info("Nessuna corrispondenza trovata.")
+            months_df = pd.DataFrame(columns=["Anno", "Mese"])
+        else:
+            months_df = (
+                df.groupby(["Anno", "Mese"])["Data"]
+                  .nunique()
+                  .reset_index(name="Giorni con RISE")
+            )
+            months_df["Mese"] = months_df["Mese"].map(MESE_NOME).fillna(months_df["Mese"])
+            months_df = months_df.sort_values(["Anno", "Mese"], key=lambda s: s.map({n:i for i,n in enumerate(MESE_NOME.values(), start=1)}) if s.name=="Mese" else s)
+        st.dataframe(months_df, use_container_width=True)
+
+        # Diagnostica (facoltativa ma utile)
         st.subheader("Diagnostica")
         st.dataframe(pd.DataFrame(diags), use_container_width=True)
 
-        # Riepilogo
-        rows = [{"Anno": y, "Giorni con RISE": len(year_days[y])} for y in sorted(year_days)]
-        st.subheader("Riepilogo per anno")
-        st.dataframe(pd.DataFrame(rows), use_container_width=True)
-
-        # Dettaglio
+        # Dettaglio completo
         st.subheader("Dettaglio (tutte le righe con RISE)")
         if not df.empty:
             df["Data_dt"] = pd.to_datetime(df["Data"])
@@ -262,9 +274,8 @@ if run:
             df_sorted = df
         st.dataframe(df_sorted, use_container_width=True)
 
-        # Output in memoria
+        # Output in memoria: PDF
         pdf_bytes = export_pdf_memory(df, full_name, total_days)
-
         st.download_button(
             "⬇️ Scarica PDF",
             data=pdf_bytes,
