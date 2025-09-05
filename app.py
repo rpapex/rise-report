@@ -182,6 +182,38 @@ def export_pdf_memory(records_df, full_name, total_days) -> bytes:
 st.title("RISE Report — Upload libero (senza regole sul nome file)")
 st.caption("Carica uno ZIP con i cartellini: l'app leggerà mese/anno dal contenuto dei PDF.")
 
+# --- Guida: come creare correttamente lo ZIP dei cartellini ---
+with st.expander("📦 Istruzioni per creare lo ZIP dei cartellini", expanded=False):
+    st.markdown("""
+### 📋 Procedura per creare lo ZIP dei cartellini
+
+1. **Accedi al portale WEFS**  
+   Vai nella sezione **Cartellino orologio**.
+
+2. **Seleziona mese e anno**  
+   - Devi recuperare i cartellini fino a **10 anni indietro** rispetto alla data di spedizione dell’interruttiva.  
+   - *Esempio*: se l’interruttiva è datata **settembre 2025**, parti da **settembre 2015**.
+
+3. **Scarica i PDF**  
+   - Una volta caricato il mese scelto, in basso a destra troverai l’icona **PDF**.  
+   - Cliccala per scaricare il file sul tuo computer.  
+   - Ripeti l’operazione per tutti i mesi di tuo interesse.
+
+4. **Crea una cartella con i PDF**  
+   - Inserisci dentro la stessa cartella tutti i file PDF scaricati.  
+   - Non è importante il nome dei singoli file.
+
+5. **Comprimi la cartella in formato ZIP**  
+   - **Windows**: clic destro → *Invia a → Cartella compressa*  
+   - **macOS**: clic destro → *Comprimi*  
+   - Il file ZIP può avere **qualsiasi nome**.
+
+6. **Carica lo ZIP nell’app**  
+   - Inserisci il tuo **nome e cognome** nel campo dedicato.  
+   - Carica lo ZIP.  
+   - Premi su **Genera Report**.
+""")
+
 with st.form("rise-form"):
     full_name = st.text_input("Nome e cognome (per intestazione PDF)", value="")
     uploaded = st.file_uploader("Archivio ZIP cartellini", type=["zip"])
@@ -241,6 +273,3 @@ if run:
 st.markdown("---")
 st.caption("Nota: se i PDF sono scansioni immagini senza testo, serve l'OCR per estrarre i dati.")
 
-
-st.markdown("---")
-st.caption("Suggerimenti: se lo ZIP è molto grande, suddividilo per anno. I file macOS '__MACOSX/._...' vengono ignorati automaticamente.")
