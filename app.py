@@ -97,7 +97,7 @@ def analyze_folder(folder):
 
                     for line in lines + ["__ENDOFPAGE__"]:
                         m = RE_ROW_DATE.match(line)
-                        if m or line == "__ENDOFPAGE__"]:
+                        if m or line == "__ENDOFPAGE__":
                             if block and (month and year):
                                 block_text = "\n".join(block)
                                 if RE_RISE.search(block_text):
