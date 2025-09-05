@@ -181,6 +181,8 @@ def export_pdf_memory(records_df, full_name, total_days) -> bytes:
 # -----------------------
 st.title("RISE Report — Upload libero (senza regole sul nome file)")
 st.caption("Carica uno ZIP con i cartellini: l'app leggerà mese/anno dal contenuto dei PDF.")
+st.info("🔒 Privacy: i file caricati vengono elaborati solo durante la sessione in una cartella temporanea e non vengono salvati in modo permanente sul server.")
+
 
 # --- Guida: come creare correttamente lo ZIP dei cartellini ---
 with st.expander("📦 Istruzioni per creare lo ZIP dei cartellini", expanded=False):
